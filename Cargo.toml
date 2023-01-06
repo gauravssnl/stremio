@@ -2,6 +2,7 @@
 name = "stremio"
 version = "0.1.0"
 edition = "2021"
+authors = ["Gaurav <gaurav.ssnl@gmail.com>"]
 license = "MIT"
 description = "A fast & async library for Stremio, written in Rust"
 readme = "README.md"
