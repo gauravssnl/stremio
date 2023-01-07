@@ -11,6 +11,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("user sessions: {sessions:?}");
     let user = client.get_user().await?;
     println!("user details: {user:?}");
+    let addon_collection = client.get_addon_collection().await?;
+    println!("addon_collection: {addon_collection:?}");
+    let datastore_meta = client.get_datastore_meta().await?;
+    println!("datastore_meta: {datastore_meta:?}");
     let logout = client.logout().await?;
     println!("logout result: {logout:?}");
     Ok(())

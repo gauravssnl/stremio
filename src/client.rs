@@ -1,52 +1,23 @@
 use std::collections::HashMap;
 
 use reqwest;
-use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::common::{
-    deserialize_null_default, GET_USER_API_URL, GET_USER_SESSIONS_API_URL, LOGIN_API_URL,
-    LOGOUT_API_URL,
+    ApiResponse, DatastoreMeta, GenericApiResponse, GetAddonCollection, LoginCredential, UserAuth,
+    DATASTORE_META_API_URL, GET_ADDON_COLLECTION_API_URL, GET_USER_API_URL,
+    GET_USER_SESSIONS_API_URL, LOGIN_API_URL, LOGOUT_API_URL,
 };
 
-/// Login API struct.
-#[derive(Serialize, Deserialize)]
-pub struct LoginCredential {
-    pub email: String,
-    pub password: String,
-    pub auth_key: Option<String>,
-}
-
-impl LoginCredential {
-    pub fn new(email: String, password: String, auth_key: Option<String>) -> Self {
-        LoginCredential {
-            email,
-            password,
-            auth_key,
-        }
-    }
-}
-
-/// API Response struct.
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ApiResponse {
-    // API returns `result` value as `null' on successful login.
-    #[serde(deserialize_with = "deserialize_null_default")]
-    pub result: HashMap<String, Value>,
-    // API returns `error` value as `null' on successful login.
-    #[serde(deserialize_with = "deserialize_null_default")]
-    pub error: HashMap<String, Value>,
-}
-
 /// Entrypoint for interacting with the API client.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Client {
     client: reqwest::Client,
     pub email: String,
     pub password: String,
     pub auth_key: String,
     pub is_logged_in: bool,
-    pub id: String,
+    pub user_info: HashMap<String, Value>,
 }
 
 impl Client {
@@ -56,22 +27,22 @@ impl Client {
             client: reqwest::Client::new(),
             email,
             password,
-            auth_key: String::default(),
-            is_logged_in: false,
-            id: String::default(),
+            ..Default::default()
         }
     }
 
     /// Set up the client with email, password & auth key to be used in API calls.
     /// Once you set up the apiKey in the client, client.login() should not be called.
+    /// It is assumed that the user has logged in & got the API token from somewhere.
     pub fn new_with_auth_key(email: String, password: String, auth_key: String) -> Self {
+        let is_logged_in = !auth_key.is_empty();
         Self {
             client: reqwest::Client::new(),
             email,
             password,
             auth_key,
-            is_logged_in: false,
-            id: String::default(),
+            is_logged_in,
+            ..Default::default()
         }
     }
 
@@ -143,10 +114,7 @@ impl Client {
         if let Some(auth_key) = login_result.get("authKey") {
             client.auth_key = auth_key.as_str().unwrap().to_string();
             client.is_logged_in = true;
-        }
-        if let Some(user) = login_result.get("user") {
-            let _id = user.get("_id").unwrap();
-            client.id = _id.as_str().unwrap().to_string();
+            client.user_info = login_result;
         }
         Ok(client)
     }
@@ -169,38 +137,48 @@ impl Client {
         }
         Ok(response)
     }
-}
 
-/// user info struct for API response.
-#[derive(Serialize, Deserialize, Debug)]
-pub struct UserInfo {
-    pub _id: String,
-    pub email: String,
-    #[serde(alias = "fbId")]
-    pub fb_id: String,
-    pub fullname: String,
-    pub avatar: String,
-    pub anonymous: String,
-    pub gdpr_consent: HashMap<String, Value>,
-    pub taste: String,
-    pub lang: String,
-    #[serde(alias = "dateRegistered")]
-    pub date_registered: String,
-    #[serde(alias = "lastModified")]
-    pub last_modified: String,
-    pub stremio_addons: String,
-    pub premium_expire: String,
-}
+    /// Get Addon collection.
+    pub async fn get_addon_collection(&self) -> Result<ApiResponse, Box<dyn std::error::Error>> {
+        if !self.is_logged_in {
+            panic!("User not logged in. Login first");
+        }
+        let data = GetAddonCollection::new(self.auth_key.clone());
+        let json = serde_json::to_string_pretty(&data).unwrap();
+        println!("JSON: {}", json);
+        let response = self
+            .client
+            .post(GET_ADDON_COLLECTION_API_URL)
+            .json(&data)
+            .send()
+            .await?;
+        let response: ApiResponse = response.json().await?;
+        if !response.error.is_empty() {
+            panic!("Get addon collection error: {:?}", response);
+        }
+        Ok(response)
+    }
 
-/// UserAuth struct for API calls.
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct UserAuth {
-    auth_key: String,
-}
-
-impl UserAuth {
-    fn new(auth_key: String) -> Self {
-        Self { auth_key }
+    /// Get Datastore meta.
+    pub async fn get_datastore_meta(
+        &self,
+    ) -> Result<GenericApiResponse, Box<dyn std::error::Error>> {
+        if !self.is_logged_in {
+            panic!("User not logged in. Login first");
+        }
+        let data = DatastoreMeta::new_with_auth_key(self.auth_key.clone());
+        let json = serde_json::to_string_pretty(&data).unwrap();
+        println!("JSON: {}", json);
+        let response = self
+            .client
+            .post(DATASTORE_META_API_URL)
+            .json(&data)
+            .send()
+            .await?;
+        let response: GenericApiResponse = response.json().await?;
+        if !response.error.is_empty() {
+            panic!("Get Datastore Meta error: {:?}", response);
+        }
+        Ok(response)
     }
 }
