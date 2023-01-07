@@ -2,10 +2,7 @@ use stremio::Client;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = Client::new(
-        "user@mail.com".to_string(),
-        "password".to_string(),
-    );
+    let client = Client::new("user@mail.com".to_string(), "password".to_string());
     let client = client.login().await?;
     println!("client after login: {client:?}");
     println!("client login result : {}", client.is_logged_in);
