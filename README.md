@@ -1,9 +1,16 @@
 # stremio
 
-A fast & async library for Stremio, written in Rust. 
+
+[![crates.io](https://img.shields.io/crates/v/stremio.svg?logo=rust)](https://crates.io/crates/stremio)
+[![docs.rs](https://docs.rs/stremio/badge.svg)](https://docs.rs/stremio/)
+[![Build](https://github.com/gauravssnl/stremio/actions/workflows/rust.yml/badge.svg)](https://github.com/gauravssnl/stremio/actions/workflows/rust.yml)
+![License](https://img.shields.io/crates/l/stremio)
+[![deps.rs](https://deps.rs/repo/github/gauravssnl/stremio/status.svg)](https://deps.rs/repo/github/gauravssnl/stremio)
+
+A fast & async library for [stremio.com](https://stremio.com) APIs written in Rust. 
 
 # Example
-Examples can be found in [this crate's examples directory].
+Examples can be found in this crate's [examples directory](https://github.com/gauravssnl/stremio/tree/master/symphonia/examples).
 
 
 A sample is provided below for reference.
@@ -32,7 +39,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 # Usage
-To use this library, the user needs to have Stremio account and use their credentails while calling the API. If you don't have an account, please sign up first.
+To use this library, the user needs to have a Stremio account and use their credentials while calling the API. If you don't have an account, please sign up first on [stremio](https://www.stremio.com/register).
+
 
 Add the `stremio` dependency in Cargo.toml dependencies section :
 ```
