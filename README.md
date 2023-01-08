@@ -10,7 +10,7 @@
 A fast & async library for [stremio.com](https://stremio.com) APIs written in Rust. 
 
 # Example
-Examples can be found in this crate's [examples directory](https://github.com/gauravssnl/stremio/tree/master/symphonia/examples).
+Examples can be found in this crate's [examples directory](https://github.com/gauravssnl/stremio/tree/main/examples).
 
 
 A sample is provided below for reference.
@@ -32,6 +32,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("user sessions: {sessions:?}");
     let user = client.get_user().await?;
     println!("user details: {user:?}");
+    let addon_collection = client.get_addon_collection().await?;
+    println!("addon_collection: {addon_collection:?}");
+    let datastore_meta = client.get_datastore_meta().await?;
+    println!("datastore_meta: {datastore_meta:?}");
     let logout = client.logout().await?;
     println!("logout result: {logout:?}");
     Ok(())
