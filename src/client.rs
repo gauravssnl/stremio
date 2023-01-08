@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use anyhow::{anyhow, Result};
+
 use reqwest;
 use serde_json::Value;
 
@@ -47,7 +49,7 @@ impl Client {
     }
 
     /// Get the reponse by calling `login` API.
-    pub async fn get_login_response(&self) -> Result<ApiResponse, Box<dyn std::error::Error>> {
+    pub async fn get_login_response(&self) -> Result<ApiResponse> {
         let login_data = LoginCredential::new(
             self.email.clone(),
             self.password.clone(),
@@ -64,8 +66,7 @@ impl Client {
     }
 
     /// Get the reponse by calling `getUserSessions` API.
-    pub async fn get_user_sessions(&self) -> Result<ApiResponse, Box<dyn std::error::Error>> {
-        println!("self auth key: {:?}", self.auth_key);
+    pub async fn get_user_sessions(&self) -> Result<ApiResponse> {
         let user_auth = UserAuth::new(self.auth_key.clone());
         let response = self
             .client
@@ -81,13 +82,11 @@ impl Client {
     }
 
     /// Get the reponse by calling `getUser` API.
-    pub async fn get_user(&self) -> Result<ApiResponse, Box<dyn std::error::Error>> {
+    pub async fn get_user(&self) -> Result<ApiResponse> {
         if !self.is_logged_in {
-            panic!("User not logged in. Login first");
+            return Err(anyhow!("User not logged in. Login first"));
         }
         let user_auth = UserAuth::new(self.auth_key.clone());
-        // let json = serde_json::to_string_pretty(&user_auth).unwrap();
-        // println!("JSON: {}", json);
         let response = self
             .client
             .post(GET_USER_API_URL)
@@ -104,25 +103,30 @@ impl Client {
     /// Login the client user for API calls.
     /// This has to done first in order to consume other APIs.
     /// This method will consume the current self and prodces a new client.
-    pub async fn login(self) -> Result<Client, Box<dyn std::error::Error>> {
+    pub async fn login(self) -> Result<Client> {
         let login_response = self.get_login_response().await?;
-        if !login_response.error.is_empty() {
-            println!("Login error: {:?}", login_response);
+        if self.is_logged_in {
+            return Err(anyhow!("User already logged in."));
         }
         let mut client = self.clone();
-        let login_result = login_response.result;
+        let login_result = &login_response.result;
         if let Some(auth_key) = login_result.get("authKey") {
             client.auth_key = auth_key.as_str().unwrap().to_string();
             client.is_logged_in = true;
-            client.user_info = login_result;
+            client.user_info = login_result.clone();
+        } else {
+            return Err(anyhow!(
+                "User not logged in. Login API response: {:?}",
+                login_response
+            ));
         }
         Ok(client)
     }
 
     /// Log out the client by calling `logout` API.
-    pub async fn logout(self) -> Result<ApiResponse, Box<dyn std::error::Error>> {
+    pub async fn logout(self) -> Result<ApiResponse> {
         if !self.is_logged_in {
-            panic!("User not logged in. Login first");
+            return Err(anyhow!("User not logged in. Login first"));
         }
         let user_auth = UserAuth::new(self.auth_key.clone());
         let response = self
@@ -133,19 +137,17 @@ impl Client {
             .await?;
         let response: ApiResponse = response.json().await?;
         if !response.error.is_empty() {
-            println!("Get user error: {:?}", response);
+            return Err(anyhow!("Get user error: {:?}", response));
         }
         Ok(response)
     }
 
     /// Get Addon collection.
-    pub async fn get_addon_collection(&self) -> Result<ApiResponse, Box<dyn std::error::Error>> {
+    pub async fn get_addon_collection(&self) -> Result<ApiResponse> {
         if !self.is_logged_in {
-            panic!("User not logged in. Login first");
+            return Err(anyhow!("User not logged in. Login first"));
         }
         let data = GetAddonCollection::new(self.auth_key.clone());
-        let json = serde_json::to_string_pretty(&data).unwrap();
-        println!("JSON: {}", json);
         let response = self
             .client
             .post(GET_ADDON_COLLECTION_API_URL)
@@ -154,21 +156,17 @@ impl Client {
             .await?;
         let response: ApiResponse = response.json().await?;
         if !response.error.is_empty() {
-            panic!("Get addon collection error: {:?}", response);
+            return Err(anyhow!("Get addon collection error: {:?}", response));
         }
         Ok(response)
     }
 
     /// Get Datastore meta.
-    pub async fn get_datastore_meta(
-        &self,
-    ) -> Result<GenericApiResponse, Box<dyn std::error::Error>> {
+    pub async fn get_datastore_meta(&self) -> Result<GenericApiResponse> {
         if !self.is_logged_in {
-            panic!("User not logged in. Login first");
+            return Err(anyhow!("User not logged in. Login first"));
         }
         let data = DatastoreMeta::new_with_auth_key(self.auth_key.clone());
-        let json = serde_json::to_string_pretty(&data).unwrap();
-        println!("JSON: {}", json);
         let response = self
             .client
             .post(DATASTORE_META_API_URL)
@@ -177,7 +175,7 @@ impl Client {
             .await?;
         let response: GenericApiResponse = response.json().await?;
         if !response.error.is_empty() {
-            panic!("Get Datastore Meta error: {:?}", response);
+            return Err(anyhow!("Get Datastore Meta error: {:?}", response));
         }
         Ok(response)
     }
