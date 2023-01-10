@@ -1,3 +1,6 @@
+//! Stremio API client.
+//!
+
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Result};
@@ -5,13 +8,18 @@ use anyhow::{anyhow, Result};
 use reqwest;
 use serde_json::Value;
 
-use crate::common::{
-    ApiResponse, DatastoreMeta, GenericApiResponse, GetAddonCollection, LoginCredential, UserAuth,
-    DATASTORE_META_API_URL, GET_ADDON_COLLECTION_API_URL, GET_USER_API_URL,
-    GET_USER_SESSIONS_API_URL, LOGIN_API_URL, LOGOUT_API_URL,
+use crate::{
+    types::{
+        ApiResponse, DatastoreMeta, GenericApiResponse, GetAddonCollection, LoginCredential,
+        UserAuth,
+    },
+    urls::{
+        DATASTORE_META_API_URL, GET_ADDON_COLLECTION_API_URL, GET_USER_API_URL,
+        GET_USER_SESSIONS_API_URL, LOGIN_API_URL, LOGOUT_API_URL,
+    },
 };
 
-/// Entrypoint for interacting with the API client.
+/// Entrypoint for interacting with the Stremio API client.
 #[derive(Debug, Clone, Default)]
 pub struct Client {
     client: reqwest::Client,
