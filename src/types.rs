@@ -19,15 +19,14 @@ pub struct ApiResponse {
     pub error: HashMap<String, Value>,
 }
 
-/// API Response struct.
+/// Generic API Response struct.
+/// Used when result type & error type is not known.
+/// For example, when result type from API is an array
+/// then `GenericApiResponse` can be used for deserializing.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GenericApiResponse {
-    // API returns `result` value as `null' on successful login.
-    #[serde(deserialize_with = "deserialize_null_default")]
     pub result: Value,
-    // API returns `error` value as `null' on successful login.
-    #[serde(deserialize_with = "deserialize_null_default")]
-    pub error: HashMap<String, Value>,
+    pub error: Value,
 }
 
 /// user info struct for API response.

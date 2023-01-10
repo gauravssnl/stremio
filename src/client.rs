@@ -182,7 +182,7 @@ impl Client {
             .send()
             .await?;
         let response: GenericApiResponse = response.json().await?;
-        if !response.error.is_empty() {
+        if !response.error.is_null() {
             return Err(anyhow!("Get Datastore Meta error: {:?}", response));
         }
         Ok(response)
