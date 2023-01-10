@@ -2,9 +2,9 @@
 
 
 [![crates.io](https://img.shields.io/crates/v/stremio.svg?logo=rust)](https://crates.io/crates/stremio)
-[![docs.rs](https://docs.rs/stremio/badge.svg)](https://docs.rs/stremio/)
 [![Build](https://github.com/gauravssnl/stremio/actions/workflows/rust.yml/badge.svg)](https://github.com/gauravssnl/stremio/actions/workflows/rust.yml)
-![License](https://img.shields.io/crates/l/stremio)
+[![docs.rs](https://docs.rs/stremio/badge.svg)](https://docs.rs/stremio/)
+[![License](https://img.shields.io/crates/l/stremio)](https://github.com/gauravssnl/stremio/tree/main/LICENSE)
 [![deps.rs](https://deps.rs/repo/github/gauravssnl/stremio/status.svg)](https://deps.rs/repo/github/gauravssnl/stremio)
 
 A fast & async library for [stremio.com](https://stremio.com) APIs written in Rust. 
@@ -48,7 +48,7 @@ To use this library, the user needs to have a Stremio account and use their cred
 
 Add the `stremio` dependency in Cargo.toml dependencies section :
 ```
-stremio = "0.1.0"
+stremio = "0.1"
 ```
 You can follow the sample examples after adding the lib.
 
