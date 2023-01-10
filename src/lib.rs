@@ -39,3 +39,4 @@ mod common;
 mod types;
 pub mod urls;
 pub use client::Client;
+pub use types::{ApiResponse, GenericApiResponse};
